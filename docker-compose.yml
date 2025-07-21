@@ -1,0 +1,10 @@
+version: "3.8"
+services:
+    bot:
+        image: markellowww_support:latest
+        stop_signal: SIGINT
+        restart: unless-stopped
+        ports:
+          - "9000:9000"
+        volumes:
+            - ".env:/app/.env"
