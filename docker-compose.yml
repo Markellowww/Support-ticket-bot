@@ -1,10 +1,34 @@
-version: "3.8"
 services:
-    bot:
-        image: markellowww_support:latest
-        stop_signal: SIGINT
-        restart: unless-stopped
-        ports:
-          - "9000:9000"
-        volumes:
-            - ".env:/app/.env"
+  postgres_service:
+    image: postgres:15
+    container_name: support_database_markellowww
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-support_db_ex}
+      POSTGRES_USER: ${POSTGRES_USER:-bot_user_ex}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-bot_password_ex}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-bot_user_ex} -d ${POSTGRES_DB:-support_db_ex}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  bot_service:
+    build: .
+    container_name: support_bot_markellowww
+    restart: unless-stopped
+    environment:
+      BOT_TOKEN: ${BOT_TOKEN}
+      ADMIN_CHAT_ID: ${ADMIN_CHAT_ID}
+      DATABASE_URL: postgresql://${POSTGRES_USER:-bot_user_ex}:${POSTGRES_PASSWORD:-bot_password_ex}@postgres_service:5432/${POSTGRES_DB:-support_db_ex}
+    ports:
+      - "9000:9000"
+    depends_on:
+      postgres_service:
+        condition: service_healthy
+
+volumes:
+  postgres_data:

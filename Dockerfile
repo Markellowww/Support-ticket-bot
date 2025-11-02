@@ -1,15 +1,28 @@
-# Отдельный сборочный образ, чтобы уменьшить финальный размер образа
-FROM python:3.9-slim-bullseye as compile-image
-RUN python -m venv /opt/venv
-ENV PATH="/opt/venv/bin:$PATH"
-COPY requirements.txt .
-RUN pip install --no-cache-dir --upgrade pip \
- && pip install --no-cache-dir -r requirements.txt
+FROM python:3.13.5-slim AS compile-image
 
-# Окончательный образ
-FROM python:3.9-slim-bullseye
+RUN apt-get update && apt-get install -y \
+    gcc \
+    python3-dev \
+    && rm -rf /var/lib/apt/lists/* \
+    && apt-get clean
+
+RUN python -m venv /opt/venv
+
+COPY requirements.txt .
+RUN /opt/venv/bin/pip install --no-cache-dir --upgrade pip \
+    && /opt/venv/bin/pip install --no-cache-dir -r requirements.txt
+
+FROM python:3.13.5-slim
+
+RUN apt-get update && apt-get install -y \
+    libpq5 \
+    && rm -rf /var/lib/apt/lists/* \
+    && apt-get clean
+
 COPY --from=compile-image /opt/venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
+
 WORKDIR /app
-COPY bot /app/bot
+COPY bot ./bot
+
 CMD ["python", "-m", "bot"]
