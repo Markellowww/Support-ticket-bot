@@ -1,2 +1,0 @@
-banned = set()
-shadowbanned = set()

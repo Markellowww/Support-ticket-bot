@@ -1,16 +1,17 @@
 import asyncio
 import logging
-
+from aiogram.fsm.storage.memory import MemoryStorage
 from aiohttp import web
 from aiogram import Bot, Dispatcher
 from aiogram.client.telegram import TelegramAPIServer
 from aiogram.webhook.aiohttp_server import SimpleRequestHandler
+from bot.database.database_settings import create_tables
 from bot.handler import setup_routers
 from fluent.runtime import FluentLocalization, FluentResourceLoader
+from bot.middleware.blacklist_middleware import BlacklistMiddleware
 from bot.util.commands import set_bot_commands
 from bot.middleware import LocalizationMiddleware
 from pathlib import Path
-
 from bot.config import config
 
 async def main():
@@ -19,20 +20,27 @@ async def main():
         format="%(asctime)s - %(levelname)s - %(name)s - %(message)s",
     )
 
+    await create_tables()
+
     locales_dir = Path(__file__).parent.joinpath("locale")
     l10n_loader = FluentResourceLoader(str(locales_dir) + "/{locale}")
-    l10n = FluentLocalization(["ru"], ["strings.ftl", "errors.ftl"], l10n_loader)
+    FluentLocalization(["ru"], ["strings.ftl", "errors.ftl"], l10n_loader)
 
     bot = Bot(token=config.bot_token.get_secret_value())
-    router = setup_routers()
 
-    dispatcher = Dispatcher()
+    storage = MemoryStorage()
+    dispatcher = Dispatcher(storage=storage)
+
+    dispatcher.update.middleware(LocalizationMiddleware())
+
+    blacklist_middleware = BlacklistMiddleware()
+    dispatcher.update.middleware(blacklist_middleware)
+
+    router = setup_routers()
     dispatcher.include_router(router)
 
     if config.custom_bot_api:
         bot.session.api = TelegramAPIServer.from_base(config.custom_bot_api, is_local=True)
-
-    dispatcher.update.middleware(LocalizationMiddleware())
 
     await set_bot_commands(bot)
 

@@ -4,8 +4,9 @@ from aiogram.filters import Command
 from aiogram.types import ContentType
 from aiogram.types import Message
 from fluent.runtime import FluentLocalization
-from bot.util.blocklists import banned, shadowbanned
+from sqlalchemy.ext.asyncio import AsyncSession
 from bot.config import config
+from bot.database.blacklist_service import BlacklistService
 from bot.filter import SupportedMediaFilter
 
 router = Router()
@@ -25,34 +26,54 @@ async def cmd_help(message: Message, l10n: FluentLocalization):
     await message.answer(l10n.format_value("help"))
 
 @router.message(F.text)
-async def text_message(message: Message, bot: Bot, l10n: FluentLocalization):
+async def text_message(message: Message, bot: Bot, l10n: FluentLocalization, blacklist_service: BlacklistService,
+                       session: AsyncSession):
     if len(message.text) > 4000:
         return await message.reply(l10n.format_value("too-long-text-error"))
 
-    if message.from_user.id in banned:
+    banned_users = await blacklist_service.get_default_banned_users(session)
+    shadowbanned_users = await blacklist_service.get_shadow_banned_users(session)
+
+    banned_ids = [user.banned_chat_id for user in banned_users]
+    shadowbanned_ids = [user.banned_chat_id for user in shadowbanned_users]
+
+    user_id = message.from_user.id
+
+    if user_id in banned_ids:
         return await message.answer(l10n.format_value("you-were-banned-error"))
-    elif message.from_user.id in shadowbanned:
+    elif user_id in shadowbanned_ids:
         return None
     else:
         await bot.send_message(
             config.admin_chat_id,
-            message.html_text + f"\n\n#id{message.from_user.id}", parse_mode="HTML"
+            message.html_text + f"\n\n#id{user_id}", parse_mode="HTML"
         )
         create_task(_send_expiring_notification(message, l10n))
         return None
 
+
 @router.message(SupportedMediaFilter())
-async def supported_media(message: Message, l10n: FluentLocalization):
+async def supported_media(message: Message, l10n: FluentLocalization, blacklist_service: BlacklistService,
+                          session: AsyncSession):
+    banned_users = await blacklist_service.get_default_banned_users(session)
+    shadowbanned_users = await blacklist_service.get_shadow_banned_users(session)
+
+    banned_ids = [user.banned_chat_id for user in banned_users]
+    shadowbanned_ids = [user.banned_chat_id for user in shadowbanned_users]
+
     if message.caption and len(message.caption) > 1000:
         return await message.reply(l10n.format_value("too-long-caption-error"))
-    if message.from_user.id in banned:
+
+    user_id = message.from_user.id
+
+    if user_id in banned_ids:
         return await message.answer(l10n.format_value("you-were-banned-error"))
-    elif message.from_user.id in shadowbanned:
+    elif user_id in shadowbanned_ids:
         return None
     else:
         await message.copy_to(
             config.admin_chat_id,
-            caption=((message.caption or "") + f"\n\n#id{message.from_user.id}"),
+            caption=((message.caption or "") + f"\n\n#id{user_id}"),
             parse_mode="HTML"
         )
         create_task(_send_expiring_notification(message, l10n))

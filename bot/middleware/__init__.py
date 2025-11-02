@@ -1,4 +1,4 @@
-from .localization import LocalizationMiddleware
+from .localization_middleware import LocalizationMiddleware
 
 __all__ = [
     "LocalizationMiddleware"
