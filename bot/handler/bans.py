@@ -1,17 +1,14 @@
 from contextlib import suppress
-
 from aiogram import Router, F
 from aiogram.filters import Command
 from aiogram.types import Message
 from fluent.runtime import FluentLocalization
-
-from bot.blocklists import banned, shadowbanned
+from bot.util.blocklists import banned, shadowbanned
 from bot.config import config
-from bot.handler.adminmode import extract_id
+from bot.handler.admin_handler import extract_id
 
 router = Router()
 router.message.filter(F.chat.id == config.admin_chat_id)
-
 
 @router.message(Command(commands=["ban"]), F.reply_to_message)
 async def cmd_ban(message: Message, l10n: FluentLocalization):
@@ -26,7 +23,7 @@ async def cmd_ban(message: Message, l10n: FluentLocalization):
             args={"id": user_id}
         )
     )
-
+    return None
 
 @router.message(Command(commands=["shadowban"]), F.reply_to_message)
 async def cmd_shadowban(message: Message, l10n: FluentLocalization):
@@ -41,7 +38,7 @@ async def cmd_shadowban(message: Message, l10n: FluentLocalization):
             args={"id": user_id}
         )
     )
-
+    return None
 
 @router.message(Command(commands=["unban"]), F.reply_to_message)
 async def cmd_unban(message: Message, l10n: FluentLocalization):
@@ -60,6 +57,7 @@ async def cmd_unban(message: Message, l10n: FluentLocalization):
             args={"id": user_id}
         )
     )
+    return None
 
 
 @router.message(Command(commands=["list_banned"]))

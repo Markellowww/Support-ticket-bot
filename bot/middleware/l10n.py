@@ -4,7 +4,6 @@ from aiogram import BaseMiddleware
 from aiogram.types import Message
 from fluent.runtime import FluentLocalization
 
-
 class L10nMiddleware(BaseMiddleware):
     def __init__(self, l10n_object: FluentLocalization):
         self.l10n_object = l10n_object
