@@ -1,14 +1,13 @@
 from aiogram import Bot
 from aiogram.types import BotCommand, BotCommandScopeDefault, BotCommandScopeChat
 
-from bot.config_reader import config
-
+from bot.config import config
 
 async def set_bot_commands(bot: Bot):
-    usercommands = [
+    user_commands = [
         BotCommand(command="help", description="Как пользоваться ботом"),
     ]
-    await bot.set_my_commands(usercommands, scope=BotCommandScopeDefault())
+    await bot.set_my_commands(user_commands, scope=BotCommandScopeDefault())
 
     admin_commands = [
         BotCommand(command="who", description="Получение информации о пользователе"),

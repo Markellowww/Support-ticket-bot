@@ -2,11 +2,10 @@ from aiogram import Router, F
 from aiogram.types import ContentType, Message
 from fluent.runtime import FluentLocalization
 
-from bot.config_reader import config
+from bot.config import config
 
 router = Router()
 router.message.filter(F.chat.id == config.admin_chat_id)
-
 
 @router.message(~F.reply_to_message)
 async def has_no_reply(message: Message, l10n: FluentLocalization):

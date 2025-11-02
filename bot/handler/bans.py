@@ -6,8 +6,8 @@ from aiogram.types import Message
 from fluent.runtime import FluentLocalization
 
 from bot.blocklists import banned, shadowbanned
-from bot.config_reader import config
-from bot.handlers.adminmode import extract_id
+from bot.config import config
+from bot.handler.adminmode import extract_id
 
 router = Router()
 router.message.filter(F.chat.id == config.admin_chat_id)

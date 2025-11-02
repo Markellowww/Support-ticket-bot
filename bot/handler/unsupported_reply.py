@@ -2,7 +2,7 @@ from aiogram import Router, F
 from aiogram.types import Message
 from fluent.runtime import FluentLocalization
 
-from bot.config_reader import config
+from bot.config import config
 
 router = Router()
 

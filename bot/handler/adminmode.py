@@ -4,7 +4,7 @@ from aiogram.filters import Command
 from aiogram.types import Message, Chat
 from fluent.runtime import FluentLocalization
 
-from bot.config_reader import config
+from bot.config import config
 
 router = Router()
 router.message.filter(F.chat.id == config.admin_chat_id)

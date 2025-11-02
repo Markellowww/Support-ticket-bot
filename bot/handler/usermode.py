@@ -7,8 +7,8 @@ from aiogram.types import Message
 from fluent.runtime import FluentLocalization
 
 from bot.blocklists import banned, shadowbanned
-from bot.config_reader import config
-from bot.filters import SupportedMediaFilter
+from bot.config import config
+from bot.filter import SupportedMediaFilter
 
 router = Router()
 
