@@ -1,5 +1,5 @@
-from .l10n import L10nMiddleware
+from .localization import LocalizationMiddleware
 
 __all__ = [
-    "L10nMiddleware"
+    "LocalizationMiddleware"
 ]

@@ -8,7 +8,7 @@ from aiogram.webhook.aiohttp_server import SimpleRequestHandler
 from bot.handler import setup_routers
 from fluent.runtime import FluentLocalization, FluentResourceLoader
 from bot.util.commands import set_bot_commands
-from bot.middleware import L10nMiddleware
+from bot.middleware import LocalizationMiddleware
 from pathlib import Path
 
 from bot.config import config
@@ -32,7 +32,7 @@ async def main():
     if config.custom_bot_api:
         bot.session.api = TelegramAPIServer.from_base(config.custom_bot_api, is_local=True)
 
-    dispatcher.update.middleware(L10nMiddleware(l10n))
+    dispatcher.update.middleware(LocalizationMiddleware())
 
     await set_bot_commands(bot)
 

@@ -1,6 +1,5 @@
 from aiogram import Router
 
-
 def setup_routers() -> Router:
     from . import unsupported_reply, admin_no_reply, bans, admin_handler, message_edit, user_handler
 
